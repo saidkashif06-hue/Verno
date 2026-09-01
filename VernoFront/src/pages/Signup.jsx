@@ -7,7 +7,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 // Point this at your backend base URL (move to an env var if you like)
-const API_BASE_URL = "http://localhost:5000/api/auth";
+const API_BASE_URL = "https://verno-rt2e.onrender.com/api/auth";
 
 // Keeps the loading spinner visible for at least this long, even if the
 // API responds faster, so the animation doesn't just flash by

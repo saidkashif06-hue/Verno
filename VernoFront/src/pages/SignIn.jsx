@@ -6,7 +6,7 @@ import gsap from "gsap";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_BASE_URL = "http://localhost:5000/api/auth";
+const API_BASE_URL = "https://verno-rt2e.onrender.com/api/auth";
 const MIN_LOADING_MS = 3000;
 
 export default function SignIn() {
