@@ -133,12 +133,20 @@ function JournalGrid() {
             >
               <div
                 data-journal-zoom
-                className="h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+                className="h-full w-full bg-cover bg-center blur-0 transition-all duration-700 ease-out group-hover:scale-105 group-hover:blur-[2px] "
                 style={{ backgroundImage: `url(${post.cover})` }}
                 role="img"
                 aria-label={post.title}
               />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-black/80 via-brand-black/10 to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-95" />
+
+              {/* Read Blog label — small plain text, fades in centered on hover */}
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <span className="translate-y-1 font-montserrat text-xs font-medium uppercase tracking-[0.2em] text-brand-gray-100 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+                  Read Blog
+                </span>
+              </div>
+
               <span className="absolute right-3 top-3 flex h-8 w-8 translate-y-1 items-center justify-center rounded-full bg-brand-gray-100 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                 <ArrowUpRight size={16} strokeWidth={2} className="text-brand-black" />
               </span>
