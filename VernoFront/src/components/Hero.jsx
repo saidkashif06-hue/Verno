@@ -110,7 +110,7 @@ export default function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative flex h-[900px] w-full items-center overflow-hidden bg-brand-black py-50"
+      className="relative flex h-[700px] w-full items-center overflow-hidden bg-brand-black mt-31"
     >
       {/* Background — image fills the entire section */}
       <div ref={imageWrapRef} className="absolute inset-0 h-full w-full">
@@ -130,7 +130,7 @@ export default function Hero() {
       </div>
 
       {/* Copy — sits over the left side of the image */}
-      <div className="relative z-10 flex w-full flex-col justify-center px-6 py-32 sm:px-10 lg:w-[50%] lg:px-16 xl:px-20">
+      <div className="relative z-10 flex w-full flex-col justify-center px-6  sm:px-10 lg:w-[50%] lg:px-16 xl:px-20">
         <span
           ref={eyebrowRef}
           className="font-montserrat text-xs font-medium uppercase tracking-[0.25em] text-brand-blue-400"

@@ -110,7 +110,7 @@ function AboutHero() {
   return (
     <section
       ref={sectionRef}
-      className="relative flex h-[760px] w-full items-center overflow-hidden bg-brand-black"
+      className="relative flex h-[770px] w-full items-center overflow-hidden bg-brand-black "
     >
       {/* Image — full width, opacity graded so it's faint behind the copy and fuller on the right */}
       <div className="absolute inset-0">
@@ -126,7 +126,7 @@ function AboutHero() {
       </div>
 
       {/* Copy — left side */}
-      <div className="relative z-10 mr-auto flex w-full flex-col justify-center px-6 py-28 sm:px-10 lg:w-[52%] lg:px-16 xl:px-20">
+      <div className="relative z-10 mr-auto flex w-full flex-col justify-center px-6  sm:px-10 lg:w-[52%] lg:px-16 xl:px-20">
         <span
           ref={eyebrowRef}
           className="font-montserrat text-xs font-medium uppercase tracking-[0.25em] text-brand-blue-400"
@@ -480,6 +480,44 @@ function Pillars() {
     return () => triggers.forEach((t) => t.kill());
   }, []);
 
+  // Hover interaction — blur image + reveal overlay label
+  useEffect(() => {
+    if (!gridRef.current) return;
+    const cards = gridRef.current.querySelectorAll("[data-pillar]");
+    const cleanups = [];
+
+    cards.forEach((card) => {
+      const image = card.querySelector("[data-pillar-img]");
+      const overlay = card.querySelector("[data-pillar-overlay]");
+      const overlayLabel = card.querySelector("[data-pillar-overlay-label]");
+
+      gsap.set(image, { filter: "blur(0px)", scale: 1 });
+      gsap.set(overlay, { opacity: 0 });
+      gsap.set(overlayLabel, { opacity: 0, y: 12 });
+
+      const onEnter = () => {
+        gsap.to(image, { filter: "blur(6px)", scale: 1.04, duration: 0.6, ease: "power3.out" });
+        gsap.to(overlay, { opacity: 1, duration: 0.4, ease: "power2.out" });
+        gsap.to(overlayLabel, { opacity: 1, y: 0, duration: 0.5, delay: 0.1, ease: "power3.out" });
+      };
+
+      const onLeave = () => {
+        gsap.to(image, { filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power3.out" });
+        gsap.to(overlay, { opacity: 0, duration: 0.3, ease: "power2.in" });
+        gsap.to(overlayLabel, { opacity: 0, y: 12, duration: 0.3, ease: "power2.in" });
+      };
+
+      card.addEventListener("mouseenter", onEnter);
+      card.addEventListener("mouseleave", onLeave);
+      cleanups.push(() => {
+        card.removeEventListener("mouseenter", onEnter);
+        card.removeEventListener("mouseleave", onLeave);
+      });
+    });
+
+    return () => cleanups.forEach((fn) => fn());
+  }, []);
+
   return (
     <section ref={sectionRef} className="w-full bg-brand-black px-6 py-24 sm:px-10 lg:px-16 xl:px-20">
       {/* Custom cursor — shared across the three pillar cards */}
@@ -517,9 +555,22 @@ function Pillars() {
                 src={p.img}
                 alt={p.title}
                 loading="lazy"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover will-change-transform"
               />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-black/85 via-brand-black/20 to-transparent" />
+
+              {/* Hover overlay */}
+              <div
+                data-pillar-overlay
+                className="pointer-events-none absolute inset-0 flex items-center justify-center bg-brand-black/40"
+              >
+                <span
+                  data-pillar-overlay-label
+                  className="font-montserrat text-xs font-medium uppercase tracking-[0.3em] text-brand-gray-100"
+                >
+                  View More
+                </span>
+              </div>
 
               <div className="absolute inset-x-0 bottom-0 p-6">
                 <span
@@ -546,7 +597,6 @@ function Pillars() {
     </section>
   );
 }
-
 /* ------------------------------------------------------------------ */
 /* 4. Follow Us — Instagram grid. Images fade in on scroll; hover      */
 /*    overlay is a plain fade, no clip-path circle.                    */
