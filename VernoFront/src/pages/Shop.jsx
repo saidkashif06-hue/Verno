@@ -300,6 +300,67 @@ function FilterPanel({ active, setActive, price, setPrice, sizeFilter, toggleSiz
 
 /* ============================ PRODUCT CARD ============================ */
 
+/**
+ * Shared size-selector + add-to-cart control block, reused for:
+ *  - the desktop hover overlay (sm and up)
+ *  - the always-visible mobile block underneath the image (below sm)
+ */
+function SizeAddControls({ product, size, setSize, onAdd, variant }) {
+  const isOverlay = variant === "overlay";
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-1.5">
+        {product.sizes.map((s) => {
+          const isSelected = size === s;
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSize(s);
+              }}
+              className={`flex h-8 min-w-[2rem] cursor-pointer items-center justify-center rounded-full border px-2 font-montserrat text-[11px] font-medium uppercase tracking-wide transition-colors duration-200 active:scale-95 ${
+                isSelected
+                  ? "border-brand-blue-500 bg-brand-blue-600 text-brand-gray-100"
+                  : isOverlay
+                  ? "border-brand-gray-100/30 bg-brand-black/60 text-brand-gray-100 backdrop-blur-sm hover:border-brand-blue-400 hover:bg-brand-blue-600/80"
+                  : "border-white/10 bg-white/5 text-brand-gray-200 hover:border-brand-blue-400"
+              }`}
+            >
+              {s}
+            </button>
+          );
+        })}
+      </div>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onAdd();
+        }}
+        disabled={!size}
+        className={`mt-2 flex w-full items-center justify-center gap-2 rounded-full py-2.5 font-montserrat text-xs font-medium uppercase tracking-wide transition-all duration-300 active:scale-[0.98] ${
+          size
+            ? isOverlay
+              ? "cursor-pointer bg-brand-gray-100 text-brand-black hover:bg-brand-blue-300"
+              : "cursor-pointer bg-brand-gray-100 text-brand-black hover:bg-brand-blue-300"
+            : isOverlay
+            ? "cursor-not-allowed bg-brand-gray-100/30 text-brand-gray-100/50"
+            : "cursor-not-allowed bg-white/5 text-brand-gray-500"
+        }`}
+      >
+        <ShoppingBag size={14} strokeWidth={2} />
+        {size ? "Add to cart" : "Select a size"}
+      </button>
+    </>
+  );
+}
+
 function ProductCard({ product, index, isWishlisted, onToggleWishlist, onAddToCart, onQuickView }) {
   const cardRef = useRef(null);
   const [size, setSize] = useState(null);
@@ -328,8 +389,7 @@ function ProductCard({ product, index, isWishlisted, onToggleWishlist, onAddToCa
     return () => st.kill();
   }, [index]);
 
-  const handleAdd = (e) => {
-    e.preventDefault();
+  const handleAdd = () => {
     if (!size || soldOut) return;
     onAddToCart(product, size);
     setSize(null);
@@ -343,17 +403,18 @@ function ProductCard({ product, index, isWishlisted, onToggleWishlist, onAddToCa
           alt={product.name}
           loading="lazy"
           className={`h-full w-full object-cover transition-transform duration-700 ease-out ${
-            soldOut ? "opacity-50 grayscale" : "group-hover:scale-105"
+            soldOut ? "opacity-50 grayscale" : "sm:group-hover:scale-105"
           }`}
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-black/70 via-brand-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-black/70 via-brand-black/10 to-transparent opacity-0 transition-opacity duration-300 sm:group-hover:opacity-100" />
 
         <StockBadge stock={product.stock} />
 
-        {/* Wishlist */}
+        {/* Wishlist — visible by default on mobile, hover-reveal not needed since it's always on */}
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             onToggleWishlist(product.id);
           }}
           aria-label="Toggle wishlist"
@@ -366,55 +427,23 @@ function ProductCard({ product, index, isWishlisted, onToggleWishlist, onAddToCa
           />
         </button>
 
-        {/* Quick view */}
+        {/* Quick view — always visible on mobile (no hover), hover-reveal only on sm+ */}
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             onQuickView(product);
           }}
-          className="absolute right-3 top-14 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-brand-black/60 opacity-0 backdrop-blur-sm transition-all duration-200 hover:bg-brand-black/90 group-hover:opacity-100"
+          className="absolute right-3 top-14 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-brand-black/60 opacity-100 backdrop-blur-sm transition-all duration-200 hover:bg-brand-black/90 sm:opacity-0 sm:group-hover:opacity-100"
           aria-label="Quick view"
         >
           <Eye size={15} strokeWidth={2} className="text-brand-gray-100" />
         </button>
 
-        {/* Size + add-to-cart — slides up on hover */}
+        {/* Size + add-to-cart overlay — desktop only (hover-driven) */}
         {!soldOut && (
-          <div className="absolute inset-x-0 bottom-0 translate-y-full p-3 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
-            <div className="flex flex-wrap gap-1.5">
-              {product.sizes.map((s) => {
-                const isSelected = size === s;
-                return (
-                  <button
-                    key={s}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSize(s);
-                    }}
-                    className={`flex h-8 min-w-[2rem] cursor-pointer items-center justify-center rounded-full border px-2 font-montserrat text-[11px] font-medium uppercase tracking-wide transition-colors duration-200 ${
-                      isSelected
-                        ? "border-brand-blue-500 bg-brand-blue-600 text-brand-gray-100"
-                        : "border-brand-gray-100/30 bg-brand-black/60 text-brand-gray-100 backdrop-blur-sm hover:border-brand-blue-400 hover:bg-brand-blue-600/80"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              onClick={handleAdd}
-              disabled={!size}
-              className={`mt-2 flex w-full items-center justify-center gap-2 rounded-full py-2.5 font-montserrat text-xs font-medium uppercase tracking-wide transition-all duration-300 ${
-                size
-                  ? "cursor-pointer bg-brand-gray-100 text-brand-black hover:bg-brand-blue-300"
-                  : "cursor-not-allowed bg-brand-gray-100/30 text-brand-gray-100/50"
-              }`}
-            >
-              <ShoppingBag size={14} strokeWidth={2} />
-              {size ? "Add to cart" : "Select a size"}
-            </button>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden translate-y-full p-3 opacity-0 transition-all duration-300 ease-out sm:block sm:group-hover:pointer-events-auto sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
+            <SizeAddControls product={product} size={size} setSize={setSize} onAdd={handleAdd} variant="overlay" />
           </div>
         )}
       </div>
@@ -433,6 +462,13 @@ function ProductCard({ product, index, isWishlisted, onToggleWishlist, onAddToCa
           {fmt(product.price)}
         </span>
       </div>
+
+      {/* Size + add-to-cart — always visible below the image on mobile, since hover doesn't work on touch */}
+      {!soldOut && (
+        <div className="mt-3 sm:hidden">
+          <SizeAddControls product={product} size={size} setSize={setSize} onAdd={handleAdd} variant="inline" />
+        </div>
+      )}
     </div>
   );
 }
@@ -476,7 +512,7 @@ function QuickViewModal({ product, onClose, onAddToCart, isWishlisted, onToggleW
       <div ref={backdropRef} onClick={handleClose} className="absolute inset-0 cursor-pointer bg-black/70 backdrop-blur-sm" />
       <div
         ref={panelRef}
-        className="relative grid w-full max-w-3xl grid-cols-1 overflow-hidden rounded-2xl border border-white/10 bg-brand-black shadow-2xl sm:grid-cols-2"
+        className="relative grid w-full max-w-3xl grid-cols-1 overflow-hidden rounded-2xl border border-white/10 bg-brand-black shadow-2xl sm:grid-cols-2 max-h-[92vh] overflow-y-auto"
       >
         <button
           onClick={handleClose}
@@ -519,8 +555,9 @@ function QuickViewModal({ product, onClose, onAddToCart, isWishlisted, onToggleW
                   {product.sizes.map((s) => (
                     <button
                       key={s}
+                      type="button"
                       onClick={() => setSize(s)}
-                      className={`flex h-9 min-w-[2.25rem] cursor-pointer items-center justify-center rounded-full border px-3 font-montserrat text-xs font-medium uppercase transition-colors duration-200 ${
+                      className={`flex h-9 min-w-[2.25rem] cursor-pointer items-center justify-center rounded-full border px-3 font-montserrat text-xs font-medium uppercase transition-colors duration-200 active:scale-95 ${
                         size === s
                           ? "border-brand-blue-500 bg-brand-blue-600 text-brand-gray-100"
                           : "border-white/10 text-brand-gray-300 hover:border-brand-blue-400"
@@ -538,6 +575,7 @@ function QuickViewModal({ product, onClose, onAddToCart, isWishlisted, onToggleW
                 </p>
                 <div className="flex items-center gap-3 rounded-full border border-white/10 px-3 py-1.5">
                   <button
+                    type="button"
                     onClick={() => setQty((q) => Math.max(1, q - 1))}
                     className="cursor-pointer text-brand-gray-300 hover:text-white"
                   >
@@ -545,6 +583,7 @@ function QuickViewModal({ product, onClose, onAddToCart, isWishlisted, onToggleW
                   </button>
                   <span className="w-4 text-center font-montserrat text-xs text-brand-gray-100">{qty}</span>
                   <button
+                    type="button"
                     onClick={() => setQty((q) => q + 1)}
                     className="cursor-pointer text-brand-gray-300 hover:text-white"
                   >
@@ -555,9 +594,10 @@ function QuickViewModal({ product, onClose, onAddToCart, isWishlisted, onToggleW
 
               <div className="mt-2 flex gap-3">
                 <button
+                  type="button"
                   onClick={handleAdd}
                   disabled={!size}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-full py-3 font-montserrat text-sm font-medium uppercase tracking-wide transition-colors duration-300 ${
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-full py-3 font-montserrat text-sm font-medium uppercase tracking-wide transition-colors duration-300 active:scale-[0.98] ${
                     size
                       ? "cursor-pointer bg-brand-gray-100 text-brand-black hover:bg-brand-blue-300"
                       : "cursor-not-allowed bg-brand-gray-100/30 text-brand-gray-100/50"
@@ -567,6 +607,7 @@ function QuickViewModal({ product, onClose, onAddToCart, isWishlisted, onToggleW
                   {size ? "Add to cart" : "Select a size"}
                 </button>
                 <button
+                  type="button"
                   onClick={() => onToggleWishlist(product.id)}
                   aria-label="Toggle wishlist"
                   className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/10 hover:border-brand-blue-400"
@@ -1109,7 +1150,9 @@ export default function Shop() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-x-5 gap-y-12 sm:grid-cols-3 xl:grid-cols-4">
+              {/* Single column on the smallest screens so the size + add-to-cart
+                  controls have room to breathe under each card */}
+              <div className="grid grid-cols-1 gap-x-5 gap-y-10 xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-4">
                 {visible.map((p, i) => (
                   <ProductCard
                     key={p.id}
@@ -1155,15 +1198,21 @@ export default function Shop() {
                 <X size={20} />
               </button>
             </div>
-            <FilterPanel
-              active={active}
-              setActive={setActive}
-              price={price}
-              setPrice={setPrice}
-              sizeFilter={sizeFilter}
-              toggleSize={toggleSizeFilter}
-              onClear={clearFilters}
-            />
+           <FilterPanel
+  active={active}
+  setActive={(cat) => {
+    setActive(cat);
+    setMobileFiltersOpen(false);
+  }}
+  price={price}
+  setPrice={setPrice}
+  sizeFilter={sizeFilter}
+  toggleSize={toggleSizeFilter}
+  onClear={() => {
+    clearFilters();
+    setMobileFiltersOpen(false);
+  }}
+/>
             <button
               onClick={() => setMobileFiltersOpen(false)}
               className="mt-8 cursor-pointer rounded-full bg-brand-gray-100 py-3 font-montserrat text-sm font-medium text-brand-black"
