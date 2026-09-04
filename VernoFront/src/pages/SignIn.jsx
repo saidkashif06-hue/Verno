@@ -77,9 +77,9 @@ export default function SignIn() {
         new Promise((resolve) => setTimeout(resolve, MIN_LOADING_MS)),
       ]);
 
-      localStorage.setItem("token", data.token);
-      window.dispatchEvent(new Event("authChange"));
-
+     localStorage.setItem("token", data.token);
+localStorage.setItem("user", JSON.stringify(data.user));
+window.dispatchEvent(new Event("authChange"));
       toast.success(`Welcome back, ${data.user?.name || "there"}!`);
 
       setTimeout(() => navigate(redirectTo), 900);

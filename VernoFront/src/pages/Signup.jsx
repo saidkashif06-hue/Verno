@@ -163,10 +163,9 @@ const handleFacebookAuth = () => {
               access_token: response.authResponse.accessToken,
             });
 
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            window.dispatchEvent(new Event("authChange"));
-
+          localStorage.setItem("token", data.token);
+localStorage.setItem("user", JSON.stringify(data.user));
+window.dispatchEvent(new Event("authChange"));
             toast.success(`Welcome, ${data.user?.name || "there"}!`);
             setTimeout(() => navigate("/"), 900);
           } catch (err) {
