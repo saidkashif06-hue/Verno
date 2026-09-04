@@ -18,6 +18,7 @@ import Contact from './pages/Contact'
 import OAuthSuccess from './pages/OAuthSuccess'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import Profile from './pages/Profile'
 
 gsap.registerPlugin(ScrollTrigger)
 
