@@ -123,6 +123,7 @@ export default function SignUp() {
         });
 
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
         window.dispatchEvent(new Event("authChange"));
 
         toast.success(`Welcome, ${data.user?.name || "there"}!`);

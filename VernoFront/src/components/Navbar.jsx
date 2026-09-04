@@ -20,9 +20,24 @@ const SOCIALS = [
   { icon: FaLinkedinIn, href: "https://linkedin.com", label: "LinkedIn" },
 ];
 
-// Keeps the logout spinner visible for this long before actually clearing
-// the token, so the animation reads as a deliberate action, not a flicker
-const LOGOUT_DELAY_MS = 3000;
+// Reads the persisted user object. Returns null if missing/unparsable so
+// the UI can fall back gracefully instead of throwing.
+const readStoredUser = () => {
+  try {
+    const raw = localStorage.getItem("user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+// "Jane Doe" -> "JD", single-word / missing name falls back to "?"
+const getInitials = (name) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  const initials = parts.slice(0, 2).map((p) => p[0]?.toUpperCase() || "");
+  return initials.join("") || "?";
+};
 
 export default function Navbar() {
   const location = useLocation();
@@ -31,7 +46,7 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => !!localStorage.getItem("token")
   );
-  const [loggingOut, setLoggingOut] = useState(false);
+  const [user, setUser] = useState(readStoredUser);
 
   const navRef = useRef(null);
   const topRowRef = useRef(null);
@@ -56,12 +71,15 @@ export default function Navbar() {
     if (el && !mobileLinksRef.current.includes(el)) mobileLinksRef.current.push(el);
   };
 
-  // Keep isLoggedIn in sync with localStorage:
-  // - "authChange" fires from SignIn/SignUp/logout in this same tab
-  //   (plain localStorage writes don't trigger re-renders on their own)
+  // Keep isLoggedIn/user in sync with localStorage:
+  // - "authChange" fires from SignIn/SignUp/Profile logout in this same
+  //   tab (plain localStorage writes don't trigger re-renders on their own)
   // - "storage" fires when the token changes in ANOTHER tab
   useEffect(() => {
-    const syncAuth = () => setIsLoggedIn(!!localStorage.getItem("token"));
+    const syncAuth = () => {
+      setIsLoggedIn(!!localStorage.getItem("token"));
+      setUser(readStoredUser());
+    };
 
     window.addEventListener("authChange", syncAuth);
     window.addEventListener("storage", syncAuth);
@@ -71,25 +89,6 @@ export default function Navbar() {
       window.removeEventListener("storage", syncAuth);
     };
   }, []);
-
-  const handleLogout = () => {
-    if (loggingOut) return;
-    setLoggingOut(true);
-
-    // Purely cosmetic delay so the spinner is visible — the actual
-    // token removal + redirect happens once this timer fires
-    setTimeout(() => {
-      localStorage.removeItem("token");
-
-      // A hard refresh wipes all JS state, including any toast on
-      // screen — so stash the message and let App.jsx show it once
-      // the page has fully reloaded and remounted
-      sessionStorage.setItem("logoutMessage", "Logged out successfully");
-
-      // Full page refresh + route to "/" (not a client-side navigate)
-      window.location.href = "/";
-    }, LOGOUT_DELAY_MS);
-  };
 
   // Entrance animation
   useEffect(() => {
@@ -310,22 +309,18 @@ export default function Navbar() {
 
           <div ref={actionsRef} className="col-start-3 flex items-center justify-end gap-5">
             {isLoggedIn ? (
-              <button
-                type="button"
-                onClick={handleLogout}
-                disabled={loggingOut}
-                aria-label="Log out"
-                className="flex cursor-pointer items-center gap-2 font-montserrat text-sm font-medium text-brand-gray-200 transition-colors duration-300 hover:text-brand-blue-400 disabled:cursor-not-allowed disabled:opacity-70"
+              <Link
+                to="/profile"
+                aria-label="Profile"
+                className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-3 text-brand-gray-200 transition-colors duration-300 hover:border-brand-blue-400/60 hover:text-white"
               >
-                {loggingOut ? (
-                  <>
-                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-brand-gray-300/40 border-t-brand-gray-100" />
-                    Logging out...
-                  </>
-                ) : (
-                  "Logout"
-                )}
-              </button>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-blue-600 font-montserrat text-xs font-semibold text-white">
+                  {getInitials(user?.name)}
+                </span>
+                <span className="font-montserrat text-sm font-medium">
+                  {user?.name?.split(" ")[0] || "Account"}
+                </span>
+              </Link>
             ) : (
               <Link
                 to="/signin"
@@ -367,23 +362,25 @@ export default function Navbar() {
           ))}
         </ul>
 
-        <div ref={addMobileLinkRef} className="flex items-center gap-6 pt-2">
+        <div ref={addMobileLinkRef} className="flex flex-col gap-4 pt-2">
           {isLoggedIn ? (
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={loggingOut}
-              className="flex cursor-pointer items-center gap-2 font-montserrat text-sm uppercase tracking-wide text-brand-gray-200 disabled:cursor-not-allowed disabled:opacity-70"
+            <Link
+              to="/profile"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3"
             >
-              {loggingOut ? (
-                <>
-                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-brand-gray-300/40 border-t-brand-gray-100" />
-                  Logging out...
-                </>
-              ) : (
-                "Logout"
-              )}
-            </button>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-blue-600 font-montserrat text-sm font-semibold text-white">
+                {getInitials(user?.name)}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate font-grotesk text-sm font-semibold text-brand-gray-100">
+                  {user?.name || "Your account"}
+                </p>
+                <p className="truncate font-montserrat text-xs text-brand-gray-400">
+                  {user?.email || ""}
+                </p>
+              </div>
+            </Link>
           ) : (
             <Link
               to="/signin"
