@@ -5,6 +5,7 @@ import { FaGoogle, FaFacebook } from "react-icons/fa";
 import gsap from "gsap";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const API_BASE_URL = "https://verno-rt2e.onrender.com/api/auth";
 const MIN_LOADING_MS = 3000;
@@ -90,7 +91,45 @@ export default function SignIn() {
     }
   };
 
+  // Google sign-in via @react-oauth/google. Uses the implicit access-token
+  // flow (popup, no page redirect). The access token is sent to the
+  // backend, which verifies it with Google and finds-or-creates the user
+  // in MongoDB Atlas, then returns our own JWT — same shape as the
+  // email/password flow. Since Google auth covers both signup and signin,
+  // this is identical to the handler in SignUp.jsx.
+  const handleGoogleAuth = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const { data } = await axios.post(`${API_BASE_URL}/google`, {
+          access_token: tokenResponse.access_token,
+        });
+
+        localStorage.setItem("token", data.token);
+        window.dispatchEvent(new Event("authChange"));
+
+        toast.success(`Welcome back, ${data.user?.name || "there"}!`);
+        setTimeout(() => navigate(redirectTo), 900);
+      } catch (err) {
+        const message =
+          err.response?.data?.message || err.message || "Google sign-in failed";
+        toast.error(message);
+      } finally {
+        setSocialLoading(null);
+      }
+    },
+    onError: () => {
+      toast.error("Google sign-in failed");
+      setSocialLoading(null);
+    },
+  });
+
+  // Facebook still goes through the backend-driven OAuth redirect.
   const handleSocialSignIn = (provider) => {
+    if (provider === "google") {
+      setSocialLoading("google");
+      handleGoogleAuth();
+      return;
+    }
     setSocialLoading(provider);
     window.location.href = `${API_BASE_URL}/${provider}`;
   };
