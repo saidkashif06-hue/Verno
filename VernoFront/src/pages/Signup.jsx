@@ -6,6 +6,7 @@ import gsap from "gsap";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useGoogleLogin } from "@react-oauth/google";
+import { loadFacebookSdk } from "../utils/loadFacebookSdk";
 
 // Point this at your backend base URL (move to an env var if you like)
 const API_BASE_URL = "https://verno-rt2e.onrender.com/api/auth";
@@ -146,15 +147,57 @@ export default function SignUp() {
   // a full page redirect, not an axios call — the browser needs to leave
   // the SPA entirely to go through Facebook's consent screen, then lands
   // back on /oauth-success once the backend has issued a token.
-  const handleSocialSignUp = (provider) => {
-    if (provider === "google") {
-      setSocialLoading("google");
-      handleGoogleAuth();
-      return;
-    }
-    setSocialLoading(provider);
-    window.location.href = `${API_BASE_URL}/${provider}`;
-  };
+  // Facebook sign-up/sign-in via the JS SDK popup flow (same shape as
+// Google). The access token from FB.login is sent to the backend, which
+// verifies it against Facebook's Graph API and finds-or-creates the user,
+// then returns our own JWT.
+const handleFacebookAuth = () => {
+  setSocialLoading("facebook");
+
+  loadFacebookSdk().then((FB) => {
+    FB.login(
+      async (response) => {
+        if (response.authResponse) {
+          try {
+            const { data } = await axios.post(`${API_BASE_URL}/facebook`, {
+              access_token: response.authResponse.accessToken,
+            });
+
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            window.dispatchEvent(new Event("authChange"));
+
+            toast.success(`Welcome, ${data.user?.name || "there"}!`);
+            setTimeout(() => navigate("/"), 900);
+          } catch (err) {
+            const message =
+              err.response?.data?.message || err.message || "Facebook sign-in failed";
+            toast.error(message);
+          } finally {
+            setSocialLoading(null);
+          }
+        } else {
+          // User closed the popup or declined
+          setSocialLoading(null);
+        }
+      },
+      { scope: "public_profile,email" }
+    );
+  });
+};
+
+const handleSocialSignUp = (provider) => {
+  if (provider === "google") {
+    setSocialLoading("google");
+    handleGoogleAuth();
+    return;
+  }
+  if (provider === "facebook") {
+    handleFacebookAuth();
+    return;
+  }
+};
+  
 
   return (
     <main className="flex min-h-screen mt-15  h-[850px] bg-brand-black text-brand-gray-100">

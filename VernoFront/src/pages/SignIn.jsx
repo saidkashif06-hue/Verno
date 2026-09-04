@@ -6,6 +6,7 @@ import gsap from "gsap";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useGoogleLogin } from "@react-oauth/google";
+import { loadFacebookSdk } from "../utils/loadFacebookSdk";
 
 const API_BASE_URL = "https://verno-rt2e.onrender.com/api/auth";
 const MIN_LOADING_MS = 3000;
@@ -125,15 +126,51 @@ export default function SignIn() {
   });
 
   // Facebook still goes through the backend-driven OAuth redirect.
-  const handleSocialSignIn = (provider) => {
-    if (provider === "google") {
-      setSocialLoading("google");
-      handleGoogleAuth();
-      return;
-    }
-    setSocialLoading(provider);
-    window.location.href = `${API_BASE_URL}/${provider}`;
-  };
+  const handleFacebookAuth = () => {
+  setSocialLoading("facebook");
+
+  loadFacebookSdk().then((FB) => {
+    FB.login(
+      async (response) => {
+        if (response.authResponse) {
+          try {
+            const { data } = await axios.post(`${API_BASE_URL}/facebook`, {
+              access_token: response.authResponse.accessToken,
+            });
+
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            window.dispatchEvent(new Event("authChange"));
+
+            toast.success(`Welcome back, ${data.user?.name || "there"}!`);
+            setTimeout(() => navigate(redirectTo), 900);
+          } catch (err) {
+            const message =
+              err.response?.data?.message || err.message || "Facebook sign-in failed";
+            toast.error(message);
+          } finally {
+            setSocialLoading(null);
+          }
+        } else {
+          setSocialLoading(null);
+        }
+      },
+      { scope: "public_profile,email" }
+    );
+  });
+};
+
+const handleSocialSignIn = (provider) => {
+  if (provider === "google") {
+    setSocialLoading("google");
+    handleGoogleAuth();
+    return;
+  }
+  if (provider === "facebook") {
+    handleFacebookAuth();
+    return;
+  }
+};
 
   return (
     <main
