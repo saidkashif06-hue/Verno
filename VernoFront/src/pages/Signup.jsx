@@ -156,7 +156,7 @@ const handleFacebookAuth = () => {
 
   loadFacebookSdk().then((FB) => {
     FB.login(
-      async (response) => {
+       (response) => {
         if (response.authResponse) {
           try {
             const { data } = await axios.post(`${API_BASE_URL}/facebook`, {
