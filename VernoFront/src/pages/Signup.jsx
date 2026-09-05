@@ -156,31 +156,43 @@ const handleFacebookAuth = () => {
 
   loadFacebookSdk().then((FB) => {
     FB.login(
-       (response) => {
+      (response) => {
         if (response.authResponse) {
-          try {
-            const { data } = await axios.post(`${API_BASE_URL}/facebook`, {
+          axios
+            .post(`${API_BASE_URL}/facebook`, {
               access_token: response.authResponse.accessToken,
-            });
+            })
+            .then(({ data }) => {
+              localStorage.setItem("token", data.token);
+              localStorage.setItem("user", JSON.stringify(data.user));
 
-          localStorage.setItem("token", data.token);
-localStorage.setItem("user", JSON.stringify(data.user));
-window.dispatchEvent(new Event("authChange"));
-            toast.success(`Welcome, ${data.user?.name || "there"}!`);
-            setTimeout(() => navigate("/"), 900);
-          } catch (err) {
-            const message =
-              err.response?.data?.message || err.message || "Facebook sign-in failed";
-            toast.error(message);
-          } finally {
-            setSocialLoading(null);
-          }
+              window.dispatchEvent(new Event("authChange"));
+
+              toast.success(
+                `Welcome, ${data.user?.name || "there"}!`
+              );
+
+              setTimeout(() => navigate("/"), 900);
+            })
+            .catch((err) => {
+              const message =
+                err.response?.data?.message ||
+                err.message ||
+                "Facebook sign-in failed";
+
+              toast.error(message);
+            })
+            .finally(() => {
+              setSocialLoading(null);
+            });
         } else {
           // User closed the popup or declined
           setSocialLoading(null);
         }
       },
-      { scope: "public_profile,email" }
+      {
+        scope: "public_profile,email",
+      }
     );
   });
 };
