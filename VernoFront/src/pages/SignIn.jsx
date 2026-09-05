@@ -129,46 +129,48 @@ window.dispatchEvent(new Event("authChange"));
   const handleFacebookAuth = () => {
   setSocialLoading("facebook");
 
-  loadFacebookSdk().then((FB) => {
-    FB.login(
-      (response) => {
-        if (response.authResponse) {
-          axios
-            .post(`${API_BASE_URL}/facebook`, {
-              access_token: response.authResponse.accessToken,
-            })
-            .then(({ data }) => {
-              localStorage.setItem("token", data.token);
-              localStorage.setItem("user", JSON.stringify(data.user));
+  if (!window.FB) {
+    toast.error("Facebook is still loading. Please try again.");
+    setSocialLoading(null);
+    return;
+  }
 
-              window.dispatchEvent(new Event("authChange"));
+  window.FB.login(
+    (response) => {
+      if (response.authResponse) {
+        axios
+          .post(`${API_BASE_URL}/facebook`, {
+            access_token: response.authResponse.accessToken,
+          })
+          .then(({ data }) => {
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
 
-              toast.success(
-                `Welcome back, ${data.user?.name || "there"}!`
-              );
+            window.dispatchEvent(new Event("authChange"));
 
-              setTimeout(() => navigate(redirectTo), 900);
-            })
-            .catch((err) => {
-              const message =
-                err.response?.data?.message ||
-                err.message ||
-                "Facebook sign-in failed";
+            toast.success(`Welcome back, ${data.user?.name || "there"}!`);
 
-              toast.error(message);
-            })
-            .finally(() => {
-              setSocialLoading(null);
-            });
-        } else {
-          setSocialLoading(null);
-        }
-      },
-      {
-        scope: "public_profile,email",
+            setTimeout(() => navigate("/"), 900);
+          })
+          .catch((err) => {
+            const message =
+              err.response?.data?.message ||
+              err.message ||
+              "Facebook sign-in failed";
+
+            toast.error(message);
+          })
+          .finally(() => {
+            setSocialLoading(null);
+          });
+      } else {
+        setSocialLoading(null);
       }
-    );
-  });
+    },
+    {
+      scope: "public_profile,email",
+    }
+  );
 };
 const handleSocialSignIn = (provider) => {
   if (provider === "google") {
