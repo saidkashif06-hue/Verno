@@ -19,6 +19,7 @@ import OAuthSuccess from './pages/OAuthSuccess'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import Profile from './pages/Profile'
+import Preloader from './components/Preloader'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -81,7 +82,7 @@ const App = () => {
   return (
     <div>
       <ToastContainer position="top-right" theme="dark" autoClose={3000} />
-
+      <Preloader onComplete={() => setHeroReady(true)} />
       <Navbar />
 
       <main className=''>

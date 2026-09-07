@@ -12,7 +12,7 @@ const PRODUCTS = [
     name: "Oxford Weave Shirt",
     price: "$128",
     image:
-      "https://images.pexels.com/photos/297933/pexels-photo-297933.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "/best3.webp",
   },
   {
     id: "p2",
@@ -26,7 +26,7 @@ const PRODUCTS = [
     name: "Merino Crew Knit",
     price: "$142",
     image:
-      "https://images.pexels.com/photos/2043590/pexels-photo-2043590.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "/best2.webp",
   },
   {
     id: "p4",
@@ -40,14 +40,14 @@ const PRODUCTS = [
     name: "Straight Fit Chino",
     price: "$118",
     image:
-      "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "/best4.webp",
   },
   {
     id: "p6",
     name: "Textured Zip Jacket",
     price: "$236",
     image:
-      "https://images.pexels.com/photos/2703202/pexels-photo-2703202.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "/best1.webp",
   },
 ];
 
