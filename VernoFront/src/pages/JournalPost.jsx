@@ -253,7 +253,7 @@ function KeepReading({ post }) {
     <div className="border-t border-brand-gray-700 px-6 py-20 sm:px-10 lg:px-16 xl:px-20">
       <h2 className="font-grotesk text-2xl font-bold text-brand-gray-100 sm:text-3xl">Keep reading</h2>
 
-      <div ref={gridRef} className="mt-10 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-3">
+      <div ref={gridRef} className="mt-10 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-3 group-hover:blur-[2px]">
         {related.map((p) => (
           <Link
             to={`/journal/${p.slug}`}
@@ -267,11 +267,18 @@ function KeepReading({ post }) {
             >
               <div
                 data-kr-zoom
-                className="h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+                className="h-full w-full bg-cover bg-center transition-transform group-hover:blur-[2px] duration-700 ease-out group-hover:scale-105"
                 style={{ backgroundImage: `url(${p.cover})` }}
                 role="img"
                 aria-label={p.title}
               />
+               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-black/80 via-brand-black/10 to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-95" />
+               {/* Read Blog label — small plain text, fades in centered on hover */}
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <span className="translate-y-1 font-montserrat text-xs font-medium uppercase  tracking-[0.2em] text-brand-gray-100 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+                  Read Blog
+                </span>
+              </div>
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-black/70 via-transparent to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-95" />
               <span className="absolute left-3 top-3 rounded-full bg-brand-black/70 px-3 py-1.5 font-montserrat text-[10px] font-medium uppercase tracking-[0.18em] text-brand-blue-300 backdrop-blur-sm">
                 {p.category}
