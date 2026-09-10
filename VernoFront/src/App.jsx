@@ -97,7 +97,7 @@ const App = () => {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/oauth-success" element={<OAuthSuccess />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<Profile  />} />
         </Routes>
       </main>
       <Footer/>
