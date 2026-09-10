@@ -185,7 +185,7 @@ export default function Profile() {
   const memberSince = user.createdAt ? formatDate(user.createdAt) : "—";
 
   return (
-    <main ref={sectionRef} className="min-h-screen w-full bg-brand-black pt-24 text-brand-gray-100">
+    <main ref={sectionRef} className="min-h-screen w-full bg-brand-black mt-10 text-brand-gray-100">
       <div className="grid w-full grid-cols-1 md:grid-cols-[272px_1fr] md:items-start">
         {/* Sidebar */}
         <aside className="flex flex-col gap-8 border-b border-white/10 px-6 py-8 md:sticky md:top-24 md:h-[calc(100vh-96px)] md:border-b-0 md:border-r md:px-8">
