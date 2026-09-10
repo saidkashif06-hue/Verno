@@ -278,6 +278,9 @@ function KeepReading({ post }) {
                 <span className="translate-y-1 font-montserrat text-xs font-medium uppercase  tracking-[0.2em] text-brand-gray-100 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
                   Read Blog
                 </span>
+                <span className="absolute right-3 top-3 flex h-8 w-8 translate-y-1 items-center justify-center rounded-full bg-brand-gray-100 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                <ArrowUpRight size={16} strokeWidth={2} className="text-brand-black" />
+              </span>
               </div>
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-black/70 via-transparent to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-95" />
               <span className="absolute left-3 top-3 rounded-full bg-brand-black/70 px-3 py-1.5 font-montserrat text-[10px] font-medium uppercase tracking-[0.18em] text-brand-blue-300 backdrop-blur-sm">
